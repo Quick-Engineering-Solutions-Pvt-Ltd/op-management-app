@@ -14,7 +14,7 @@ export const adminSignup = async (
 ) => {
   try {
     const { username, email, password, userType = "user" } = req.body;
-    
+
     if (!username || !email || !password) {
       throw new ErrorHandler(400, "Username or email already exists");
     }
@@ -32,7 +32,7 @@ export const adminSignup = async (
       Isverified: false,
       profilePicture: null,
     });
-    console.log(user, "check")
+    console.log(user, "check");
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -62,7 +62,7 @@ export const adminLogin = async (
     }
     // Validate password
     const isValidPassword = await bcrypt.compare(password, user.password);
-    console.log(isValidPassword,"invalidadd")
+    console.log(isValidPassword, "invalidadd");
     if (!isValidPassword) {
       throw new ErrorHandler(400, "Invalid email or password");
     }
@@ -340,7 +340,3 @@ export const changePassword = async (
     next(error);
   }
 };
-
-
-
-
