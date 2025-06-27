@@ -24,12 +24,14 @@
     "react-hook-form": "^7.58.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.2",
+    "react-toastify": "^11.0.5",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.10",
     "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@locator/babel-jsx": "^0.4.4",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/react-redux": "^7.1.34",

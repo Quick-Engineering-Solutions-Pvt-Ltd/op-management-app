@@ -6,6 +6,8 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { login, resetAuth } from "../../store/Slice/authSlice";
 import { schema } from "../validationComponent/validationSchema"; // Adjust the import path
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 interface LoginFormData {
   email: string;
@@ -27,12 +29,6 @@ const LoginForm = () => {
   const { status, error, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    console.log("LoginForm - Mounting, resetting auth");
-    dispatch(resetAuth()); // Reset auth state on mount
-  }, [dispatch]);
-
-  useEffect(() => {
-    console.log("LoginForm - Auth State changed:", { status, error });
     if (status === "succeeded" && user) {
       if (user.userType === "admin") {
         console.log("LoginForm - Redirecting to /admin/dashboard"); // Debug
@@ -41,8 +37,31 @@ const LoginForm = () => {
         console.log("LoginForm - Redirecting to /user/dashboard"); // Debug
         navigate("/user/dashboard");
       }
+    } else if (status === "failed" && error) {
+      console.log(error, "show this");
+      const toastOptions = {
+        position: "top-right" as const,
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      };
+      if (error.includes("Invalid email")) {
+        toast.error(error, { ...toastOptions, theme: "colored" });
+      } else {
+        toast.error(error, toastOptions);
+      }
+      setTimeout(() => {
+        dispatch(resetAuth());
+      }, 6000);
     }
   }, [status, error, navigate]);
+
+  useEffect(() => {
+    console.log("Auth State:", { status, error, user });
+    dispatch(resetAuth()); // Reset auth state on mount
+  }, [dispatch]);
 
   const onSubmit: SubmitHandler<LoginFormData> = (data) => {
     console.log("LoginForm - Submitting login with:", data);
@@ -50,22 +69,17 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="wrapper flex flex-col md:flex-row items-center justify-between min-h-screen bg-white w-full overflow-hidden">
-      <div className="sider flex flex-col items-center justify-center min-h-[50vh] md:min-h-screen bg-white w-full md:w-1/2 py-6 px-4">
+    <div className="wrapper flex flex-col md:flex-row items-center justify-between bg-white w-full h-132 overflow-hidden">
+      <div className="sider flex flex-col items-center justify-center min-h-[50vh] bg-white w-full md:w-1/2 py-6 px-4">
         <div className="img w-full max-w-md text-center">
           <img
             src="/images/img2.png"
             alt="Illustration"
             className="mx-auto mb-4 w-full h-auto max-w-[300px] md:max-w-[400px]"
           />
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-black mb-4">
+          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-black mb-4">
             Sign in for managing users
           </h2>
-          <img
-            src="/images/logo.ico"
-            alt="Logo"
-            className="mx-auto mb-4 w-24 h-auto"
-          />
           <p className="text-sm md:text-base text-gray-600">
             Sign in to manage our company purchase orders efficiently. Gain
             access to powerful tools for tracking, organizing, and streamlining
@@ -91,6 +105,7 @@ const LoginForm = () => {
           className="w-full max-w-sm"
         >
           <div className="mb-4">
+            <span className="hidden items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset">Invalid Email</span>
             <input
               type="text"
               placeholder="Enter your email"

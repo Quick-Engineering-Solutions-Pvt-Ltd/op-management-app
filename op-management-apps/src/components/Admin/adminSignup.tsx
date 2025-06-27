@@ -9,6 +9,7 @@ import type { AppDispatch, RootState } from "../../store/store";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { registerSchema } from "../validationComponent/validationSchema"; // Adjust the import path
+import { toast } from "react-toastify";
 
 interface RegisterFormData {
   username: string;
@@ -32,7 +33,7 @@ const RegisterForm = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { status, error } = useSelector((state: RootState) => state.auth);
+  const { status, error ,user} = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(resetAuth()); // Reset on mount
@@ -41,18 +42,36 @@ const RegisterForm = () => {
     };
   }, [dispatch]);
 
+
   useEffect(() => {
-    if (status === "succeeded") {
+    console.log("Auth State:", { status, error, user });
+    if (status === "succeeded" && user) {
+      console.log("Registration successful, user:", user);
       navigate("/login");
+    } else if (status === "failed" && error) {
+      console.log(error, "show this");
+      toast.error(error, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      // Reset auth state after displaying the toast
+      setTimeout(() => {
+        dispatch(resetAuth());
+      }, 6000);
     }
-  }, [status, navigate]);
+  }, [status, error, user, dispatch, navigate]);
+
 
   const onSubmit = (data: RegisterFormData) => {
     dispatch(registerUser(data));
   };
 
   return (
-    <div className="wrapper flex flex-col md:flex-row items-center justify-between min-h-screen bg-white w-full overflow-hidden">
+    <div className="wrapper flex flex-col md:flex-row items-center justify-between  bg-white w-full overflow-hidden">
       <div className="flex flex-col items-center justify-center min-h-[50vh] md:min-h-screen bg-white w-full md:w-1/2 py-6 px-4">
         <h1 className="text-2xl font-bold absolute top-0 left-0 p-4">
           <img
