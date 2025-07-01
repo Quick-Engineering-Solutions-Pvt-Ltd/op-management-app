@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@reduxjs/toolkit": "^2.8.2",
@@ -18,6 +20,7 @@
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.518.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -25,6 +28,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.2",
     "react-toastify": "^11.0.5",
+    "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.10",
     "yup": "^1.6.1"
@@ -32,6 +36,7 @@
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@locator/babel-jsx": "^0.4.4",
+    "@types/lodash": "^4.17.19",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/react-redux": "^7.1.34",

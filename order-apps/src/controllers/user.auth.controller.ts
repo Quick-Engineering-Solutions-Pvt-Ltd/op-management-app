@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { config } from "dotenv";
 import ErrorHandler from "../utils/errorHandler";
+import mongoose from "mongoose";
 config();
 
 export const adminSignup = async (
@@ -32,7 +33,6 @@ export const adminSignup = async (
       Isverified: false,
       profilePicture: null,
     });
-    console.log(user, "check");
     res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -74,7 +74,7 @@ export const adminLogin = async (
     const token = jwt.sign(
       { id: user._id, email, userType: user.userType },
       process.env.JWT_SECRET as string,
-      { expiresIn: "1d" } // Token expiration time
+      { expiresIn: "1h" } // Changed to 1 hour
     );
 
     // Set JWT in a cookie
@@ -89,10 +89,12 @@ export const adminLogin = async (
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      token,
       user: {
         id: user._id,
         email: user.email,
         userType: user.userType,
+        username: user.username,
       },
     });
   } catch (error) {
@@ -121,7 +123,7 @@ export const assignPermissions = async (
     }
     // Validate resource and actions
     const validResources = ["users", "permissions", "orders"];
-    const validActions = ["read", "write", "update"];
+    const validActions = ["read", "write", "update", "create"];
     if (!validResources.includes(resource)) {
       return res.status(400).json({
         success: false,
@@ -176,13 +178,14 @@ export const adminCreateUser = async (
     }
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const profilePicture = req.file ? `/images/${req.file.filename}` : null;
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
       userType,
       Isverified: false,
-      profilePicture: null,
+      profilePicture,
       employeeId,
     });
     return res.status(201).json({
@@ -194,6 +197,7 @@ export const adminCreateUser = async (
         email,
         userType,
         employeeId,
+        profilePicture 
       },
     });
   } catch (error) {
@@ -337,6 +341,178 @@ export const changePassword = async (
     });
   } catch (error) {
     console.error("Change password error:", error);
+    next(error);
+  }
+};
+
+//// create a function for the get all user with po coount each user
+const ORDER_STATUSES = ["pending", "processing", "completed", "cancelled"];
+
+export const getAllUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Parse and validate query parameters
+    const page = parseInt((req.query.page as string) || "1", 10);
+    const limit = parseInt((req.query.limit as string) || "10", 10);
+    const status = req.query.status as string | undefined;
+    const skip = (page - 1) * limit;
+
+    if (isNaN(page) || page < 1) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid page number" });
+    }
+    if (isNaN(limit) || limit < 1 || limit > 100) {
+      return res.status(400).json({ success: false, message: "Invalid limit" });
+    }
+    if (status && !ORDER_STATUSES.includes(status)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status" });
+    }
+
+    // Build match stage for orders
+    const orderMatch = status ? { "orders.status": status } : {};
+
+    // Aggregation pipeline
+    const pipeline: mongoose.PipelineStage[] = [
+      // Initial user match: only verified users and specific userType
+      { $match: { userType: "user" } }, // Filter verified users
+      // Lookup to join orders
+      {
+        $lookup: {
+          from: "orders",
+          localField: "employeeId",
+          foreignField: "generatedBy.employeeId",
+          as: "orders",
+        },
+      },
+      // Filter orders by status (if provided)
+      { $match: orderMatch },
+      // Project to include only necessary fields
+      {
+        $project: {
+          username: 1,
+          employeeId: 1,
+          email: 1,
+          Isverified: 1,
+          profilePicture: 1,
+          // orders: 1,
+          orderCount: { $size: "$orders" },
+        },
+      },
+      // Sort by username
+      { $sort: { username: 1 } },
+      // Pagination
+      { $skip: skip },
+    ];
+
+    // Run aggregation and count in parallel for efficiency
+    const [users, totalUsers] = await Promise.all([
+      User.aggregate(pipeline),
+      User.countDocuments({ userType: "user" }), // Adjust match criteria as needed
+    ]);
+
+    // Prepare response
+    const response = {
+      success: true,
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total: totalUsers,
+        totalPages: Math.ceil(totalUsers / limit),
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    next(error); // Pass to centralized error handler
+  }
+};
+
+////  create a funcation for the delete user
+export const deleteUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      throw new ErrorHandler(404, "User not found");
+    }
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+      data: { id },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//// create a for the search profile using username or email
+export const searchProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { query } = req.query;
+    if (!query || typeof query !== "string") {
+      throw new ErrorHandler(
+        400,
+        "Query parameter is required and must be a string"
+      );
+    }
+    const regex = new RegExp(query, "i"); // Case-insensitive search
+    const pipeline: mongoose.PipelineStage[] = [
+      {
+        $match: {
+          $and: [
+            { userType: "user" },
+            {
+              $or: [{ username: regex }, { email: regex }],
+            },
+          ],
+        },
+      },
+      // Lookup to join orders
+      {
+        $lookup: {
+          from: "orders",
+          localField: "employeeId",
+          foreignField: "generatedBy.employeeId",
+          as: "orders",
+        },
+      },
+      // Project to include necessary fields and order count
+      {
+        $project: {
+          username: 1,
+          employeeId: 1,
+          email: 1,
+          Isverified: 1,
+          orderCount: { $size: "$orders" },
+        },
+      },
+      // Sort by username
+      { $sort: { username: 1 } },
+    ];
+
+    // Run aggregation
+    const users = await User.aggregate(pipeline);
+
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
     next(error);
   }
 };

@@ -296,7 +296,8 @@ export const updateOrderDetailsById = async (
     if (!updatedOrder) {
       throw new ErrorHandler(400, "Order not found");
     }
-    const verificationResult = await updateIsVerified(req.user.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const verificationResult = await updateIsVerified((req as any).user.id);
     // Return the updated order
     return res.status(200).json({
       success: true,
@@ -317,7 +318,6 @@ export const searchOrders = async (
 ) => {
   try {
     const { query } = req.query;
-    console.log(req.query, "check query");
     const searchQuery: FilterQuery<typeof Order> = {};
     if (query && typeof query === "string") {
       const regex = { $regex: new RegExp(query, "i") }; // Case-insensitive regex
@@ -330,7 +330,6 @@ export const searchOrders = async (
       ];
     }
     const orders = await Order.find(searchQuery).sort({ createdAt: -1 });
-    console.log(orders, "check orders");
     return res.status(200).json({
       success: true,
       message: "Orders retrieved successfully",

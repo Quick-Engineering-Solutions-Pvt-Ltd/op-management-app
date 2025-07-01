@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
         enum: ["admin", "user"],
         default: "user",
     },
+    // departments:{
+    //     type: String,
+    //     enum: ["Sales","Accounts","Production","R&D"]
+    // },
     employeeId: { type: String, required: false },
     Isverified: { type: Boolean, default: false },
     profilePicture: { type: String, default: null },

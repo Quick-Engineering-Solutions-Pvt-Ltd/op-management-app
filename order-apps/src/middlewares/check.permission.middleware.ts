@@ -164,6 +164,8 @@ export const authenticateUser = async (
   }
 };
 
+
+
 export const restrictTo = (allowedTypes: UserType[]) => {
   return (req: CustomRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
