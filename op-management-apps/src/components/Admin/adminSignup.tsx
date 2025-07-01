@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   register as registerUser,
-  resetAuth,
+  logout,
 } from "../../store/Slice/authSlice";
 import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../store/store";
@@ -36,9 +36,9 @@ const RegisterForm = () => {
   const { status, error ,user} = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    dispatch(resetAuth()); // Reset on mount
+    dispatch(logout()); // Reset on mount
     return () => {
-      dispatch(resetAuth()); // Reset on unmount
+      dispatch(logout()); // Reset on unmount
     };
   }, [dispatch]);
 
@@ -60,7 +60,7 @@ const RegisterForm = () => {
       });
       // Reset auth state after displaying the toast
       setTimeout(() => {
-        dispatch(resetAuth());
+        dispatch(logout());
       }, 6000);
     }
   }, [status, error, user, dispatch, navigate]);

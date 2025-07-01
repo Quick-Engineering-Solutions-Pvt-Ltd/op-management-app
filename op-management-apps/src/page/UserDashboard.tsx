@@ -3,17 +3,15 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 // import { logout, resetAuth } from "../store/Slice/authSlice"; // Adjust path
 import type { AppDispatch } from "../store/store";
-import { resetAuth } from "../store/Slice/authSlice";
+import { logout } from "../store/Slice/authSlice";
 
 const UserDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    dispatch(logout()).then(() => {
-      dispatch(resetAuth());
-      navigate("/login");
-    });
+    dispatch(logout());
+    navigate("/login");
   };
 
   return (

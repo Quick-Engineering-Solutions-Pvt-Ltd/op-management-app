@@ -8,6 +8,14 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("jwtToken");
+  if (token && !config.url?.includes("/api/auth/validate")) {
+    config.headers.Authorization = `Bearer ${token}`; // Use header for non-validate endpoints
+  }
+  return config;
+});
+
 
 // export const createOrder = async (orderData) => {
 //   const response = await api.post('order/api/order-create-api', orderData);
@@ -63,4 +71,24 @@ export const adminSigIn=async(UserData: { email: string; password: string})=>{
   });
   return response.data; 
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getUserWithWithOp = async (p0: { page: number; limit: number; }) => {
+  const response = await api.get(`/user/api/admin-get-all-user`,{withCredentials:true});
+  console.log("getUserWithWithOp response shariq khan fetch user details:", response.data);
+  return response.data;
+}
+
+export const apiDeleteUser = async (userId: string) => {
+  const response = await api.delete(`/user/api/admin-delete/${userId}`, { withCredentials: true });
+  return response.data;
+}
+
+export const apiSearchUser = async (query: string) => {
+  const response = await api.get(`/user/api/admin-user-profie`, {
+    params: { query },
+    withCredentials: true,
+  });
+  return response.data;
+};
 

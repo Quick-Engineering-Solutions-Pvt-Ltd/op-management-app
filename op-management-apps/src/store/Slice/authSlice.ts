@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // store/Slice/authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
@@ -13,11 +14,13 @@ interface UserData {
   email: string;
   password: string;
   userType: string;
+ profilePicture?: string; 
 }
 
 interface AuthState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any | null;
+  token: string | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
@@ -59,6 +62,7 @@ export const register = createAsyncThunk(
   }
 );
 
+
 export const login = createAsyncThunk(
   "auth/login",
   async (payload: LoginPayload, { rejectWithValue }) => {
@@ -70,6 +74,7 @@ export const login = createAsyncThunk(
       if (!response.success) {
         return rejectWithValue(response.message || "Login failed");
       }
+      localStorage.setItem("jwt",response.token);
       return response;
     } catch (error: unknown) {
       if (
@@ -100,14 +105,15 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
+    token: localStorage.getItem("jwt") || null,
     status: "idle",
     error: null,
   } as AuthState,
   reducers: {
-    resetAuth: (state) => {
+    logout: (state) => {
       state.user = null;
-      state.status = "idle";
-      state.error = null;
+      state.token = null;
+      localStorage.removeItem("jwt");
     },
   },
   extraReducers: (builder) => {
@@ -119,6 +125,7 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
+        state.token=action.payload.token
         state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
@@ -141,5 +148,37 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetAuth } = authSlice.actions;
+
+export const validateToken = createAsyncThunk(
+  "auth/validateToken",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      console.log(token)
+      if (!token) {
+        return rejectWithValue("No token found");
+      }
+      const response = await fetch("/api/auth/validate", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!data.success) {
+        localStorage.removeItem("jwtToken");
+        return rejectWithValue("Invalid or expired token");
+      }
+      return data.user;
+    } catch (error) {
+      localStorage.removeItem("jwt");
+      return rejectWithValue("Token validation failed");
+    }
+  }
+);
+
+//// create a slice for auth for the get user with op
+
+
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

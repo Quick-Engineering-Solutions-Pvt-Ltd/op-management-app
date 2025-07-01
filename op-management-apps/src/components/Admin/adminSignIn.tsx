@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../store/store";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { login, resetAuth } from "../../store/Slice/authSlice";
+import { login, logout } from "../../store/Slice/authSlice";
 import { schema } from "../validationComponent/validationSchema"; // Adjust the import path
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
@@ -31,14 +31,13 @@ const LoginForm = () => {
   useEffect(() => {
     if (status === "succeeded" && user) {
       if (user.userType === "admin") {
-        console.log("LoginForm - Redirecting to /admin/dashboard"); // Debug
+        // console.log("LoginForm - Redirecting to /admin/dashboard"); // Debug
         navigate("/admin/dashboard");
       } else if (user.userType === "user") {
-        console.log("LoginForm - Redirecting to /user/dashboard"); // Debug
+        // console.log("LoginForm - Redirecting to /user/dashboard"); // Debug
         navigate("/user/dashboard");
       }
     } else if (status === "failed" && error) {
-      console.log(error, "show this");
       const toastOptions = {
         position: "top-right" as const,
         autoClose: 5000,
@@ -53,18 +52,16 @@ const LoginForm = () => {
         toast.error(error, toastOptions);
       }
       setTimeout(() => {
-        dispatch(resetAuth());
+        dispatch(logout());
       }, 6000);
     }
   }, [status, error, navigate]);
 
   useEffect(() => {
-    console.log("Auth State:", { status, error, user });
-    dispatch(resetAuth()); // Reset auth state on mount
+    dispatch(logout()); // Reset auth state on mount
   }, [dispatch]);
 
   const onSubmit: SubmitHandler<LoginFormData> = (data) => {
-    console.log("LoginForm - Submitting login with:", data);
     dispatch(login({ email: data.email, password: data.password }));
   };
 
