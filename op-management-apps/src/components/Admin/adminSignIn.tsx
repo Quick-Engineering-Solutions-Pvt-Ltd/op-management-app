@@ -102,7 +102,9 @@ const LoginForm = () => {
           className="w-full max-w-sm"
         >
           <div className="mb-4">
-            <span className="hidden items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset">Invalid Email</span>
+            <span className="hidden items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset">
+              Invalid Email
+            </span>
             <input
               type="text"
               placeholder="Enter your email"

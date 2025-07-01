@@ -3,7 +3,11 @@ import {
   createAsyncThunk,
   type PayloadAction,
 } from "@reduxjs/toolkit";
-import { getUserWithWithOp as fetchUserWithOp ,apiDeleteUser, apiSearchUser} from "../../utils/api";
+import {
+  getUserWithWithOp as fetchUserWithOp,
+  apiDeleteUser,
+  apiSearchUser,
+} from "../../utils/api";
 
 // Define interfaces
 interface User {
@@ -13,7 +17,7 @@ interface User {
   email: string;
   Isverified: boolean;
   orderCount: number;
-  profilePicture?: string; 
+  profilePicture?: string;
 }
 
 interface Pagination {
@@ -59,18 +63,18 @@ export const getUserWithWithOp = createAsyncThunk<
   }
 });
 
-
-
 export const deleteUser = createAsyncThunk<
   UserResponse,
   string,
   { rejectValue: string }
->('auth/deleteUser', async (userId, { rejectWithValue }) => {
+>("auth/deleteUser", async (userId, { rejectWithValue }) => {
   try {
     const response = await apiDeleteUser(userId);
     return response;
   } catch (error) {
-    return rejectWithValue(error instanceof Error ? error.message : 'Failed to delete user');
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Failed to delete user"
+    );
   }
 });
 
@@ -81,17 +85,17 @@ export const searchAdminUser = createAsyncThunk<
   { query: string },
   { rejectValue: string }
 >(
-  'auth/searchAdminUser',
+  "auth/searchAdminUser",
   async ({ query }: { query: string }, { rejectWithValue }) => {
     try {
-      if (!query || query.trim() === '') {
-        return rejectWithValue('Query cannot be empty');
+      if (!query || query.trim() === "") {
+        return rejectWithValue("Query cannot be empty");
       }
       const response = await apiSearchUser(query);
       return response;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to search users'
+        error instanceof Error ? error.message : "Failed to search users"
       );
     }
   }
@@ -134,7 +138,7 @@ export const userSlice = createSlice({
       .addCase(getUserWithWithOp.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Failed to fetch users";
-      })/// delete user
+      }) /// delete user
       .addCase(deleteUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -144,29 +148,38 @@ export const userSlice = createSlice({
         (state, action: PayloadAction<UserResponse>) => {
           state.loading = false;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          state.users = state.users.filter((user) => user._id !== (action.payload.data as any)._id);
+          state.users = state.users.filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (user) => user._id !== (action.payload.data as any)._id
+          );
           if (state.pagination) {
             state.pagination.total -= 1;
-            state.pagination.totalPages = Math.ceil(state.pagination.total / state.pagination.limit);
+            state.pagination.totalPages = Math.ceil(
+              state.pagination.total / state.pagination.limit
+            );
           }
           state.error = null;
         }
       )
       .addCase(deleteUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as string) || 'Failed to delete user';
-      })//// for search user  profile
+        state.error = (action.payload as string) || "Failed to delete user";
+      }) //// for search user  profile
       .addCase(searchAdminUser.pending, (state) => {
-        state.loading = true;})
-      .addCase(searchAdminUser.fulfilled, (state, action: PayloadAction<UserResponse>) => {
-        state.loading = false;
-        state.users = action.payload.data;
-        state.pagination = action.payload.pagination;
-        state.error = null;
+        state.loading = true;
       })
+      .addCase(
+        searchAdminUser.fulfilled,
+        (state, action: PayloadAction<UserResponse>) => {
+          state.loading = false;
+          state.users = action.payload.data;
+          state.pagination = action.payload.pagination;
+          state.error = null;
+        }
+      )
       .addCase(searchAdminUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as string) || 'Failed to search users';
+        state.error = (action.payload as string) || "Failed to search users";
       });
   },
 });

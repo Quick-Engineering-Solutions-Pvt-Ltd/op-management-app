@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import {  useSelector } from "react-redux";
-import type { RootState, } from "../../../store/store";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/store";
 
 interface UserProfileProps {
   name: string;
@@ -10,17 +10,15 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
-  imageUrl = '/images/user-pic.png',
+  imageUrl = "/images/user-pic.png",
   onUpdatePassword,
 }) => {
   const [showPasswordFields, setShowPasswordFields] = useState(false);
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const { user} = useSelector((state: RootState) => state.auth);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const { user } = useSelector((state: RootState) => state.auth);
   // const dispatch = useDispatch<AppDispatch>();
-  console.log(user,"check user deatils")
-
-  
+  console.log(user, "check user deatils");
 
   const handleUpdateClick = () => {
     setShowPasswordFields(true);
@@ -31,9 +29,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
     if (onUpdatePassword) {
       onUpdatePassword();
     }
-    
-    setOldPassword('');
-    setNewPassword('');
+
+    setOldPassword("");
+    setNewPassword("");
     setShowPasswordFields(false);
   };
 
@@ -45,7 +43,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
         className="w-28 h-28 rounded-full border-4 border-blue-200 shadow-md object-cover"
       />
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-1">{user.username}</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-1">
+          {user.username}
+        </h2>
         <p className="text-gray-500 text-base">{user.email}</p>
       </div>
       {!showPasswordFields ? (
@@ -65,7 +65,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
             placeholder="Enter old password"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={oldPassword}
-            onChange={e => setOldPassword(e.target.value)}
+            onChange={(e) => setOldPassword(e.target.value)}
             required
           />
           <input
@@ -73,7 +73,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
             placeholder="Enter new password"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={newPassword}
-            onChange={e => setNewPassword(e.target.value)}
+            onChange={(e) => setNewPassword(e.target.value)}
             required
           />
           <div className="flex w-full justify-between space-x-2">

@@ -197,7 +197,7 @@ export const adminCreateUser = async (
         email,
         userType,
         employeeId,
-        profilePicture 
+        profilePicture,
       },
     });
   } catch (error) {
