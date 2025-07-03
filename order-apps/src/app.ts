@@ -11,9 +11,8 @@ dotenv.config({ path: "./.env" });
 
 export const envMode = process.env.NODE_ENV?.trim() || "DEVELOPMENT";
 const port = process.env.PORT || 3000;
-const mongoURI = process.env.MONGO_URI ||""
-console.log(mongoURI)
-
+const mongoURI = process.env.MONGO_URI || "";
+console.log(mongoURI);
 
 connectDB(mongoURI);
 
@@ -22,19 +21,18 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 app.use(morgan("dev"));
 
 const allowedOrigins = [
- "exp://o87i5p4-anonymous-8081.exp.direct",
- "http://localhost:5173",
+  "exp://o87i5p4-anonymous-8081.exp.direct",
+  "http://localhost:5173",
 ];
 
 // Add CORS_ORIGIN from environment variable if defined
 if (process.env.CORS_ORIGIN) {
-  const envOrigins = process.env.CORS_ORIGIN
-    .split(",")
-    .map((origin) => origin.trim().replace(/\/$/, ""));
+  const envOrigins = process.env.CORS_ORIGIN.split(",").map((origin) =>
+    origin.trim().replace(/\/$/, "")
+  );
   allowedOrigins.push(...envOrigins);
 }
 
@@ -55,12 +53,11 @@ app.use(
   })
 );
 
-
 app.use("/order/api", orderRouter);
 app.use("/user/api", userRouter);
 
 app.get("*", (req, res) => {
-  console.log("404 Not Found:", req.params,"check params");
+  console.log("404 Not Found:", req.params, "check params");
   res.status(404).json({
     success: false,
     message: "Page not found",

@@ -13,9 +13,9 @@ import {
 } from "../../store/Slice/adminSlice";
 
 const USERS_PER_PAGE = 5; // Set how many users per page
-const FRONTEND_BASE_URL= import.meta.env.VITE_FRONTEND_BASE_URL || "http://localhost:5173/images/profile.png";
-
-
+const FRONTEND_BASE_URL =
+  import.meta.env.VITE_FRONTEND_BASE_URL ||
+  "http://localhost:5173/images/profile.png";
 
 const Dashboard = () => {
   const [showAlert, setShowAlert] = useState(false);
@@ -25,13 +25,10 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [searchQuery, setSearchQuery] = useState<string>("")
-  
-
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const dispatch = useDispatch<AppDispatch>();
   const { users } = useSelector((state: RootState) => state.adminUser);
-  
 
   // Fetch users on mount and when currentPage changes
   useEffect(() => {
@@ -202,7 +199,7 @@ const Dashboard = () => {
                   clipRule="evenodd"
                 />
               </svg>
-             <input
+              <input
                 id="search"
                 name="search"
                 value={searchQuery}
@@ -265,8 +262,12 @@ const Dashboard = () => {
               {paginatedUsers.map((user) => (
                 <tr className="border-b border-gray-200" key={user._id}>
                   <td className="p-2 text-center rounded-full w-10 h-10 text-gray-800">
-                     <img
-                      src={user.profilePicture ? user.profilePicture : FRONTEND_BASE_URL}
+                    <img
+                      src={
+                        user.profilePicture
+                          ? user.profilePicture
+                          : FRONTEND_BASE_URL
+                      }
                       alt={`${user.username}'s profile`}
                       className="w-8 h-8 mx-auto rounded-full object-cover"
                     />

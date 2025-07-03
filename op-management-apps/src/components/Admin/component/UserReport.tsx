@@ -81,9 +81,13 @@ const UserReport: React.FC<UserReportProps> = ({
       </div>
       <div className="flex justify-between text-sm text-gray-600">
         <span>Status:</span>
-          <span className={`font-medium ${Isverified ? 'text-green-600' : 'text-red-600'}`}>
-            {Isverified ? 'Verified' : 'Unverified'}
-          </span>
+        <span
+          className={`font-medium ${
+            Isverified ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {Isverified ? "Verified" : "Unverified"}
+        </span>
       </div>
     </div>
   </div>

@@ -1,9 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  register as registerUser,
-  logout,
-} from "../../store/Slice/authSlice";
+import { register as registerUser, logout } from "../../store/Slice/authSlice";
 import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../store/store";
 import { useForm } from "react-hook-form";
@@ -33,7 +30,7 @@ const RegisterForm = () => {
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { status, error ,user} = useSelector((state: RootState) => state.auth);
+  const { status, error, user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(logout()); // Reset on mount
@@ -41,7 +38,6 @@ const RegisterForm = () => {
       dispatch(logout()); // Reset on unmount
     };
   }, [dispatch]);
-
 
   useEffect(() => {
     console.log("Auth State:", { status, error, user });
@@ -64,7 +60,6 @@ const RegisterForm = () => {
       }, 6000);
     }
   }, [status, error, user, dispatch, navigate]);
-
 
   const onSubmit = (data: RegisterFormData) => {
     dispatch(registerUser(data));

@@ -197,7 +197,7 @@ export const adminCreateUser = async (
         email,
         userType,
         employeeId,
-        profilePicture 
+        profilePicture,
       },
     });
   } catch (error) {
@@ -507,7 +507,6 @@ export const searchProfile = async (
 
     // Run aggregation
     const users = await User.aggregate(pipeline);
-
     return res.status(200).json({
       success: true,
       data: users,

@@ -14,7 +14,7 @@ interface UserData {
   email: string;
   password: string;
   userType: string;
- profilePicture?: string; 
+  profilePicture?: string;
 }
 
 interface AuthState {
@@ -62,7 +62,6 @@ export const register = createAsyncThunk(
   }
 );
 
-
 export const login = createAsyncThunk(
   "auth/login",
   async (payload: LoginPayload, { rejectWithValue }) => {
@@ -74,7 +73,7 @@ export const login = createAsyncThunk(
       if (!response.success) {
         return rejectWithValue(response.message || "Login failed");
       }
-      localStorage.setItem("jwt",response.token);
+      localStorage.setItem("jwt", response.token);
       return response;
     } catch (error: unknown) {
       if (
@@ -125,7 +124,7 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload.user;
-        state.token=action.payload.token
+        state.token = action.payload.token;
         state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
@@ -144,41 +143,59 @@ const authSlice = createSlice({
         console.log(state, "chekc");
         state.status = "failed";
         state.error = action.payload as string;
+      })
+      .addCase(validateToken.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      ///// validateToken is used to check if the token is valid
+      .addCase(validateToken.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.user = action.payload; // Set user from validateToken response
+        state.error = null;
+      })
+      .addCase(validateToken.rejected, (state, action) => {
+        console.log("validateToken rejected:", action.payload);
+        state.status = "failed";
+        state.user = null;
+        state.token = null;
+        state.error = action.payload as string;
+        localStorage.removeItem("jwt");
       });
   },
 });
-
 
 export const validateToken = createAsyncThunk(
   "auth/validateToken",
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("jwt");
-      console.log(token)
+      console.log("Validating token:", token);
+      console.log(token);
       if (!token) {
         return rejectWithValue("No token found");
       }
       const response = await fetch("/api/auth/validate", {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include token in Authorization header
         },
-        credentials: "include",
       });
       const data = await response.json();
+
       if (!data.success) {
-        localStorage.removeItem("jwtToken");
+        localStorage.removeItem("jwt"); // Remove correct key
         return rejectWithValue("Invalid or expired token");
       }
       return data.user;
     } catch (error) {
-      localStorage.removeItem("jwt");
+     localStorage.removeItem("jwt"); // Remove correct key
       return rejectWithValue("Token validation failed");
     }
   }
 );
 
 //// create a slice for auth for the get user with op
-
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
