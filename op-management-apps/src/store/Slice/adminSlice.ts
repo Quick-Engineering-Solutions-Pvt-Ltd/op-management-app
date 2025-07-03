@@ -7,6 +7,7 @@ import {
   getUserWithWithOp as fetchUserWithOp,
   apiDeleteUser,
   apiSearchUser,
+  adminChangePassword,
 } from "../../utils/api";
 
 // Define interfaces
@@ -32,6 +33,8 @@ interface UserState {
   pagination: Pagination | null;
   loading: boolean;
   error: string | null;
+  passwordChangeStatus: "idle" | "loading" | "succeeded" | "failed";
+  passwordChangeMessage: string | null;
 }
 
 interface UserResponse {
@@ -45,7 +48,21 @@ const initialState: UserState = {
   pagination: null,
   loading: false,
   error: null,
+  passwordChangeStatus: "idle",
+  passwordChangeMessage: null,
 };
+
+interface ChangePasswordResponse {
+  success: boolean;  
+  message: string;
+}
+
+//// create interface for the change password
+interface ChangePasswordPayload {
+  email: string; // Assuming email is needed for the change password operation
+  oldPassword: string;
+  newPassword: string;
+}
 
 // Define the async thunk
 export const getUserWithWithOp = createAsyncThunk<
@@ -77,6 +94,32 @@ export const deleteUser = createAsyncThunk<
     );
   }
 });
+
+///// create async thunk for change password
+export const changePassword = createAsyncThunk<
+  ChangePasswordResponse | undefined,
+  ChangePasswordPayload,
+  { rejectValue: string }
+>(
+  "adminUser/changePassword",
+  async ({ email, oldPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await adminChangePassword({
+        email,
+        oldPassword,
+        newPassword,
+      });
+      if (!response.success) {
+        return rejectWithValue(response.message || "Failed to change password");
+      }
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to change password"
+      );
+    }
+  }
+);
 
 // Define the async thunk for searching users
 // This thunk will take a query string and return the search results
@@ -112,6 +155,18 @@ export const userSlice = createSlice({
       state.loading = false;
       state.error = null;
     },
+    resetUsers: (state) => {
+      state.users = [];
+      state.pagination = null;
+      state.loading = false;
+      state.error = null;
+    },
+    resetPasswordChangeState: (state) => {
+      state.passwordChangeStatus = "idle";
+      state.passwordChangeMessage = null;
+      state.error = null;
+    },
+    
   },
   extraReducers: (builder) => {
     builder
@@ -164,7 +219,27 @@ export const userSlice = createSlice({
       .addCase(deleteUser.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Failed to delete user";
-      }) //// for search user  profile
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.passwordChangeStatus = "loading";
+        state.passwordChangeMessage = null;
+        state.error = null;
+      })
+      .addCase(
+        changePassword.fulfilled,
+        (state, action: PayloadAction<ChangePasswordResponse | undefined>) => {
+          state.passwordChangeStatus = "succeeded";
+          state.passwordChangeMessage = action.payload?.message || "Password changed successfully";
+          state.error = null;
+        }
+      )
+      .addCase(changePassword.rejected, (state, action) => {
+        state.passwordChangeStatus = "failed";
+        state.passwordChangeMessage = action.payload ? String(action.payload) : "Failed to change password";
+        state.error = action.payload ? String(action.payload) : "Failed to change password";
+      })
+
+      //// for search user  profile
       .addCase(searchAdminUser.pending, (state) => {
         state.loading = true;
       })
@@ -184,5 +259,5 @@ export const userSlice = createSlice({
   },
 });
 
-export const { adminGetUsers } = userSlice.actions;
+export const { adminGetUsers ,resetUsers, resetPasswordChangeState} = userSlice.actions;
 export default userSlice.reducer;

@@ -507,7 +507,6 @@ export const searchProfile = async (
 
     // Run aggregation
     const users = await User.aggregate(pipeline);
-
     return res.status(200).json({
       success: true,
       data: users,

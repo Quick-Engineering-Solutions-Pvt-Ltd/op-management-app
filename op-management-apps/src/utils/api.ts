@@ -1,4 +1,5 @@
 // src/utils/api.ts
+
 import axios from "axios";
 
 const api = axios.create({
@@ -100,5 +101,22 @@ export const apiSearchUser = async (query: string) => {
     params: { query },
     withCredentials: true,
   });
+  return response.data;
+};
+
+
+
+export const adminChangePassword = async (passwordChange:{
+  email: string;
+  oldPassword: string;
+  newPassword: string;
+}) => {
+  const response = await api.patch(
+    `/user/api/admin-user-change-password`,
+    passwordChange,
+    {
+      withCredentials: true,
+    }
+  );
   return response.data;
 };
