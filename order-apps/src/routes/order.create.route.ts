@@ -14,7 +14,7 @@ import {authenticateUser, requirePermission, restrictTo,restrictToVerifiedUser} 
 
 const router = express.Router();
 
-router.route("/order-create-api").post(requirePermission("orders", "create"),TryCatch(orderCreate));
+router.route("/order-create-api").post(requirePermission("orders","create"),TryCatch(orderCreate));
 router.route("/get-order-details/:id").get(authenticateUser,TryCatch(getOrderDetailsById));
 router.route("/get-all-orders").get(authenticateUser,restrictTo(["admin", "user"]),TryCatch(getAllOrders));
 router.route("/search-order").get(authenticateUser,TryCatch(searchOrders));

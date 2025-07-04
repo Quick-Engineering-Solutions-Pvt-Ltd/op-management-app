@@ -5,6 +5,7 @@ import { verifyToken} from "../middlewares/user.verify.permission.middleware"
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
+import { approvePermissionRequest, authenticateUser, requirePermissionForResource } from "@/middlewares/check.permission.middleware";
 
 // Derive __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -44,8 +45,7 @@ const userRouter = express.Router();
 
 userRouter.route("/admin-signup").post(TryCatch(adminSignup));
 userRouter.route("/admin-sigin").post(TryCatch(adminLogin));
-// userRouter.route("/admin-create-user").post(verifyToken,upload.single("profilePicture"),adminCreateUser);
-userRouter.route("/admin-create-user").post(upload.single("profilePicture"),adminCreateUser);
+userRouter.route("/admin-create-user").post(verifyToken,upload.single("profilePicture"),adminCreateUser);
 userRouter.route("/admin-verify-user/:userId").patch(verifyToken,verifyUser)
 userRouter.route("/admin-assign-permission").post(verifyToken,assignPermissions)
 userRouter.route("/admin-get-all-user").get(verifyToken,getAllUser)
@@ -58,6 +58,8 @@ userRouter.route("/admin-user-profie").get(verifyToken,searchProfile)
 //// admin create for the users
 userRouter.route("/admin-create-user-login").post(AdmineCreateuserLogin);
 userRouter.route("/admin-user-change-password").patch(verifyToken,changePassword)
+userRouter.route("/user-request-permission").post(authenticateUser,requirePermissionForResource );
+userRouter.route("/admin-check-permission").post(verifyToken,approvePermissionRequest);
 
 
 
