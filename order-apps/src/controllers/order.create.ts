@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from "express";
 import Order from "../models/order.model.js";
 import mongoose from "mongoose";
 import { FilterQuery } from "mongoose";
 import ErrorHandler from "../utils/errorHandler";
 import User from "../models/user.auth.model";
+import { createOrderNotification } from "./notificationService.js";
 
 // Function to generate orderNumber in format "01/QESPL/JUN/25"
 export const createOrderNumber = async (
@@ -101,8 +103,25 @@ export const orderCreate = async (
       generatedBy,
       formGeneratedBy,
     });
-
     const savedOrder = await newOrder.save();
+    const userSocketMap: Map<string, string> = req.app.get("userSocketMap");
+
+    // Assuming req.user.id contains the authenticated user's ID
+    // // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (req as any).user?.id;
+    // // // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //  const io = (req.app as any).get("io");
+    const io = req.app.get("io");
+    // // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // const userSocketMap = (req.app as any).get("userSocketMap");
+    await createOrderNotification(
+      savedOrder._id.toString(),
+      userId,
+      io,
+      userSocketMap,
+      "create"
+    );
+
     return res.status(201).json({
       success: true,
       message: "Order created successfully",
@@ -137,7 +156,6 @@ export const getOrderDetailsById = async (
     next(error);
   }
 };
-
 
 export const getAllOrders = async (
   req: Request,
@@ -295,6 +313,20 @@ export const updateOrderDetailsById = async (
     );
     if (!updatedOrder) {
       throw new ErrorHandler(400, "Order not found");
+    }
+    ///// create a notification for the updated order
+    const userSocketMap: Map<string, string> = req.app.get("userSocketMap");
+    console.log("User Socket Map:", req.app);
+    const userId = (req as any).user?.id;
+    const io = req.app.get("io");
+    if (updatedOrder) {
+      await createOrderNotification(
+        updatedOrder._id.toString(),
+        userId,
+        io,
+        userSocketMap,
+        "update"
+      );
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const verificationResult = await updateIsVerified((req as any).user.id);
